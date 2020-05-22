@@ -1,0 +1,142 @@
+- name: Change Apt Repository
+  replace:
+    path: '/etc/apt/sources.list'
+    regexp: 'http://ports\.ubuntu\.com'
+    replace: 'http://jp.ports.ubuntu.com'
+
+- name: Install Packages
+  apt:
+    pkg: '{{ item }}'
+    state: 'present'
+    update_cache: 'yes'
+  with_items:
+    - postfix
+    - i2c-tools
+    - zsh
+    - emacs-nox
+    - git
+    - mailutils
+    - lsb-release
+    - net-tools
+    - inetutils-traceroute
+
+- name: Setting Timezone
+  timezone:
+    name: 'Asia/Tokyo'
+
+- name: Generate Locales
+  locale_gen:
+    name: '{{ item }}'
+    state: 'present'
+  with_items:
+    - en_US.UTF-8
+    - ja_JP.UTF-8
+
+- name: Setting Sudo
+  template:
+    src: 'sudo/sudoers.j2'
+    dest: '/etc/sudoers'
+    owner: 'root'
+    group: 'root'
+    mode: '0440'
+
+- name: Setting SSHD
+  template:
+    src: 'ssh/sshd_config.j2'
+    dest: '/etc/ssh/sshd_config'
+  notify: restart sshd
+
+- name: Setting NTP client
+  replace:
+    path: '/etc/systemd/timesyncd.conf'
+    regexp: '^#NTP='
+    replace: 'NTP={{ network.ntp }}'
+  notify: restart timesyncd
+
+- name: Create /etc/rc.local
+  # NOTE: Wifi の場合は「ホスト名-wifi」でアクセスできるようにする
+  lineinfile:
+    dest: '/etc/rc.local'
+    create: true
+    owner: 'root'
+    group: 'root'
+    mode: '755'
+    state: 'present'
+    line: '#!/usr/bin/bash'
+    regexp: '#!/.*'
+    insertbefore: 'BOF'
+    state: 'present'
+
+- name: Setting USB off
+  blockinfile:
+    dest: '/etc/rc.local'
+    content: |
+      # USB off
+      for i in 20980000.usb 3f980000.usb; do
+        path="/sys/devices/platform/soc/${i}/buspower";
+        if [ -e $path ]; then
+          echo 0 > $path;
+        fi;
+      done
+
+- name: Setting Wifi - dhcp
+  # NOTE: Wifi の場合は「ホスト名-wifi」でアクセスできるようにする
+  lineinfile:
+    dest: '/etc/dhcp/dhclient.conf'
+    state: 'present'
+    line: 'interface "wlan0" { send host-name = concat (gethostname(), "-wifi"); }'
+
+- name: Join I2C group
+  user:
+    name: ubuntu
+    group: i2c
+    append: yes
+    
+- name: Enable I2C at 50kHz
+  lineinfile:
+    dest: '/boot/firmware/syscfg.txt'
+    state: present
+    insertafter: 'dtparam=i2c_arm=on'
+    line: 'dtparam=i2c_baudrate=50000'
+
+- name: Load I2C module
+  lineinfile:
+    dest: '/etc/modules'
+    state: 'present'
+    line: 'i2c-dev'
+
+- name: Setting WiFi - watch
+  template:
+    src: 'wifi/watch_wifi.zsh'
+    dest: '/usr/local/bin/watch_wifi.zsh'
+    owner: 'root'
+    group: 'root'
+    mode: '755'
+
+- name: Setting WiFi - watch cron
+  cron:
+    name: 'watch wifi connection'
+    minute: '*/2'
+    job: '/usr/local/bin/watch_wifi.zsh > /dev/null'
+    state: 'present'
+
+- name: Setting Postfix
+  lineinfile:
+    dest={{item.dest}}
+    regexp={{item.regexp}}
+    line={{item.line}}
+  with_items:
+    - { dest: '/etc/postfix/main.cf', regexp: '^relayhost =.*', line: "relayhost = [{{network.mail}}]" }
+    - { dest: '/etc/aliases', regexp: '^root:.*', line: "root: {{network.root_mail}}" }
+  notify: restart postfix
+
+- name: Boot nofitication
+  lineinfile:
+    dest: '/etc/rc.local'
+    state: 'present'
+    line: 'echo "System reetarted at " `date` | mail -s "`hostname`: restart" root'
+
+# Local Variables:
+# mode: yaml
+# tab-width: 4
+# End:

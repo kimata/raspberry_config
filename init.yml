@@ -1,0 +1,11 @@
+- hosts: all
+  vars_files: 
+    - config.yml
+
+  become: yes
+
+  roles:
+    - init
+
+  handlers:
+
