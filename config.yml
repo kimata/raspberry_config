@@ -1,5 +1,8 @@
 network:
   mail: mail.green-rabbit.net
   ntp: ntp.green-rabbit.net
+  zabbix: zabbix.green-rabbit.net
   root_mail: root@dripper.green-rabbit.net
 
+fluentd:
+  aggr_host: columbia.green-rabbit.net

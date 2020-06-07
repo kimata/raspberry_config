@@ -6,19 +6,28 @@
 
 - name: Install Packages
   apt:
-    pkg: '{{ item }}'
-    state: 'present'
+    pkg:
+      - postfix
+      - i2c-tools
+      - wiringpi
+      - python-is-python3
+      - python3-gpiozero
+      - zsh
+      - emacs-nox
+      - git
+      - mailutils
+      - lsb-release
+      - net-tools
+      - daemontools
+      - inetutils-traceroute
+      - zabbix-agent
     update_cache: 'yes'
-  with_items:
-    - postfix
-    - i2c-tools
-    - zsh
-    - emacs-nox
-    - git
-    - mailutils
-    - lsb-release
-    - net-tools
-    - inetutils-traceroute
+
+- name: Setting Hostname
+  lineinfile:
+    dest: '/etc/hosts'
+    regexp: '^127.0.1.1.*$'
+    line: '127.0.1.1        {{ ansible_hostname }}'
 
 - name: Setting Timezone
   timezone:
@@ -27,7 +36,6 @@
 - name: Generate Locales
   locale_gen:
     name: '{{ item }}'
-    state: 'present'
   with_items:
     - en_US.UTF-8
     - ja_JP.UTF-8
@@ -49,9 +57,19 @@
 - name: Setting NTP client
   replace:
     path: '/etc/systemd/timesyncd.conf'
-    regexp: '^#NTP='
-    replace: 'NTP={{ network.ntp }}'
+    regexp: '{{ item.regexp }}'
+    replace: '{{ item.replace }}'
+  with_items:
+    - regexp: '^#?NTP=.*$'
+      replace: 'NTP={{ network.ntp }}'
+    - regexp: '^#?FallbackNTP=.*$'
+      replace: 'FallbackNTPNTP=ntp.nict.jp'
   notify: restart timesyncd
+
+- name: Enable systemd-time-wait-sync
+  systemd:
+    name: systemd-time-wait-sync.service
+    enabled: yes
 
 - name: Create /etc/rc.local
   # NOTE: Wifi の場合は「ホスト名-wifi」でアクセスできるようにする
@@ -61,11 +79,15 @@
     owner: 'root'
     group: 'root'
     mode: '755'
-    state: 'present'
-    line: '#!/usr/bin/bash'
+    line: '#!/bin/bash'
     regexp: '#!/.*'
     insertbefore: 'BOF'
-    state: 'present'
+
+- name: Wait execution of rc.local until time synced
+  lineinfile:
+    dest: '/lib/systemd/system/rc-local.service'
+    regexp: '^After=.*$'
+    line: 'After=systemd-time-wait-sync.service'
 
 - name: Setting USB off
   blockinfile:
@@ -78,36 +100,47 @@
           echo 0 > $path;
         fi;
       done
+    insertbefore: 'exit 0'
 
 - name: Setting Wifi - dhcp
   # NOTE: Wifi の場合は「ホスト名-wifi」でアクセスできるようにする
   lineinfile:
     dest: '/etc/dhcp/dhclient.conf'
-    state: 'present'
     line: 'interface "wlan0" { send host-name = concat (gethostname(), "-wifi"); }'
 
-- name: Join I2C group
-  user:
-    name: ubuntu
-    group: i2c
-    append: yes
-    
+- name: Setting Zabbix agent
+  lineinfile:
+    dest: '/etc/zabbix/zabbix_agentd.conf'
+    regexp: '{{item.regexp}}'
+    line: '{{item.line}}'
+  with_items:
+    - regexp: '^Server=.*$'
+      line: 'Server={{network.zabbix}}'
+    - regexp: '^ServerActive=.*$'
+      line: 'ServerActive={{network.zabbix}}'
+  notify: restart zabbix agent
+
 - name: Enable I2C at 50kHz
   lineinfile:
     dest: '/boot/firmware/syscfg.txt'
-    state: present
     insertafter: 'dtparam=i2c_arm=on'
     line: 'dtparam=i2c_baudrate=50000'
 
 - name: Load I2C module
   lineinfile:
     dest: '/etc/modules'
-    state: 'present'
     line: 'i2c-dev'
+
+- name: Setting Port drive strength
+  lineinfile:
+    dest: '/etc/rc.local'
+    regexp: '^gpio drive.*$'
+    line: 'gpio drive 0 7'
+    insertbefore: 'exit 0'
 
 - name: Setting WiFi - watch
   template:
-    src: 'wifi/watch_wifi.zsh'
+    src: 'wifi/watch_wifi.zsh.j2'
     dest: '/usr/local/bin/watch_wifi.zsh'
     owner: 'root'
     group: 'root'
@@ -118,7 +151,7 @@
     name: 'watch wifi connection'
     minute: '*/2'
     job: '/usr/local/bin/watch_wifi.zsh > /dev/null'
-    state: 'present'
+
 
 - name: Setting Postfix
   lineinfile:
@@ -126,15 +159,46 @@
     regexp={{item.regexp}}
     line={{item.line}}
   with_items:
-    - { dest: '/etc/postfix/main.cf', regexp: '^relayhost =.*', line: "relayhost = [{{network.mail}}]" }
-    - { dest: '/etc/aliases', regexp: '^root:.*', line: "root: {{network.root_mail}}" }
+    - dest: '/etc/postfix/main.cf'
+      regexp: '^relayhost =.*'
+      line: 'relayhost = [{{network.mail}}]'
+    - dest: '/etc/postfix/main.cf'
+      regexp: '^myhostname =.*'
+      line: 'myhostname = {{ ansible_hostname }}'
+    - dest: '/etc/aliases'
+      regexp: '^root:.*'
+      line: "root: {{network.root_mail}}"
   notify: restart postfix
 
 - name: Boot nofitication
   lineinfile:
     dest: '/etc/rc.local'
-    state: 'present'
-    line: 'echo "System reetarted at " `date` | mail -s "`hostname`: restart" root'
+    line: 'echo "System restarted at " `date` | mail -s "`hostname`: restart" root'
+    insertbefore: 'exit 0'
+
+- name: Enable Watchdog
+  lineinfile:
+    dest: '/boot/firmware/usercfg.txt'
+    line: 'dtparam=watchdog=on'
+
+- name: Setting Watchdog
+  lineinfile:
+    create: 'yes'
+    dest: '/etc/modprobe.d/bcm2835-wdt.conf'
+    regexp: '^options bcm2835_wdt heartbeat='
+    line: 'options bcm2835_wdt heartbeat=30'
+
+- name: Setting Heartbeat
+  lineinfile:
+    dest: '/etc/systemd/system.conf'
+    regexp: '^#?RuntimeWatchdogSec'
+    line: 'RuntimeWatchdogSec=10'
+
+- name: Join I2C group
+  user:
+    name: ubuntu
+    group: i2c
+    append: yes
 
 # Local Variables:
 # mode: yaml

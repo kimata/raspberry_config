@@ -2,14 +2,17 @@
   service: name=ssh state=restarted
 
 - name: restart timesyncd
-  systemd: name=systemd-timesyncd.service state=restarted
+  systemd: name=systemd-timesyncd state=restarted
+
+- name: restart zabbix agent
+  systemd: name=zabbix-agent state=restarted
 
 - name: restart postfix 1
-  systemd: name=ssh state=restarted
+  shell: newaliases
   listen: restart postfix
 
 - name: restart postfix 2
-  shell: newaliases
+  systemd: name=ssh state=restarted
   listen: restart postfix
 
 # Local Variables:
