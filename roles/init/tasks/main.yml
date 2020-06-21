@@ -15,7 +15,6 @@
       - postfix
       - i2c-tools
       - wiringpi
-      - python-is-python3
       - python3-gpiozero
       - zsh
       - emacs-nox
