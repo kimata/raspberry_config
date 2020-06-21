@@ -30,16 +30,16 @@ count=$(echo $ping | grep 'received' | awk -F',' '{ print $2 }' | awk '{ print $
 if [ "$count" = "0" ]; then
     echo "Connectivity test failed (IP: ${gateway_ip})." >&2
     echo "Let's try to reconnect to WiFi AP." >&2
-
-    echo "ping RESULT:" >&2
+    echo "" >&2
+    echo "> ping:" >&2
     echo "$ping" >&2
-
+    echo "" >&2
     arp=$(/usr/sbin/arp)
-    echo "arp RESULT:" >&2
+    echo "> arp" >&2
     echo "$arp" >&2
 
     iwconfig=$(sudo iwconfig)
-    echo "iwconfig RESULT:" >&2
+    echo "> iwconfig" >&2
     echo "$iwconfig" >&2
 else
     echo "Connectivity test passed. Packet(s) received: ${count}."
