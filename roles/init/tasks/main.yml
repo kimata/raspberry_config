@@ -181,12 +181,11 @@
     minute: '*/2'
     job: '/usr/local/bin/watch_wifi.zsh > /dev/null'
 
-
 - name: Setting Postfix
   lineinfile:
-    dest={{item.dest}}
-    regexp={{item.regexp}}
-    line={{item.line}}
+    dest: '{{item.dest}}'
+    regexp: '{{item.regexp}}'
+    line: '{{item.line}}'
   with_items:
     - dest: '/etc/postfix/main.cf'
       regexp: '^relayhost =.*'
@@ -208,6 +207,7 @@
 - name: Enable Watchdog
   lineinfile:
     dest: '/boot/firmware/usercfg.txt'
+    insertbefore: 'EOF'
     line: 'dtparam=watchdog=on'
 
 - name: Setting Watchdog
