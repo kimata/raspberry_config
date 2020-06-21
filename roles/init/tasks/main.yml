@@ -16,6 +16,7 @@
       - i2c-tools
       - wiringpi
       - python3-gpiozero
+      - python3-smbus
       - zsh
       - emacs-nox
       - git
