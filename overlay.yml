@@ -1,0 +1,16 @@
+# ■使い方
+# - Overlayroot を有効にする場合
+#   ansible-playbook -i ホスト名, --extra-vars "enable=1" overlay.yml
+#
+# - Overlayroot を無効にする場合
+#   ansible-playbook -i ホスト名, --extra-vars "disable=1" overlay.yml
+
+- hosts: all
+
+  become: yes
+
+  roles:
+    - overlayroot
+
+  handlers:
+

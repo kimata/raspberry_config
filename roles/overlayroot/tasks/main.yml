@@ -1,0 +1,27 @@
+- name: Disable overlayroot
+  shell:
+    cmd: |
+      overlayroot-chroot /usr/bin/sed -i -e 's/^overlayroot=.*$/overlayroot=""/' /etc/overlayroot.conf
+  when: disable is defined
+
+- name: Enable overlayroot
+  lineinfile:
+    dest: '/etc/overlayroot.conf'
+    regexp: '^overlayroot=.*$'
+    line: 'overlayroot="tmpfs"'
+  when: enable is defined
+
+- name: Reboot
+  shell: 'reboot'
+
+- name: Wait for booting
+  local_action: wait_for
+  args:
+    host: '{{ inventory_hostname }}'
+    port: 22
+    timeout: 600
+
+# Local Variables:
+# mode: yaml
+# tab-width:4 
+# End:
