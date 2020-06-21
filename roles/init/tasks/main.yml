@@ -29,6 +29,12 @@
     update_cache: 'yes'
     cache_valid_time: 86400
 
+- name: Uninstall clout-init
+  apt:
+    name: 'cloud-init'
+    state: 'absent'
+    purge: 'yes'
+
 - name: Setting Hostname
   lineinfile:
     dest: '/etc/hosts'
@@ -76,6 +82,17 @@
   systemd:
     name: systemd-time-wait-sync.service
     enabled: yes
+
+- name: Disable APT auto updatre
+  lineinfile:
+    dest: '/etc/apt/apt.conf.d/20auto-upgrades'
+    regexp: '{{item.regexp}}'
+    line: '{{item.line}}'
+  with_items:
+    - regexp: '^APT::Periodic::Update-Package-Lists .*'
+      line: 'APT::Periodic::Update-Package-Lists "0";'
+    - regexp: '^APT::Periodic::Unattended-Upgrade .*'
+      line: 'APT::Periodic::Unattended-Upgrade "0";'
 
 - name: Create /etc/rc.local
   # NOTE: Wifi の場合は「ホスト名-wifi」でアクセスできるようにする
@@ -131,6 +148,12 @@
     dest: '/boot/firmware/syscfg.txt'
     insertafter: 'dtparam=i2c_arm=on'
     line: 'dtparam=i2c_baudrate=50000'
+
+- name: Disable Serial Console
+  replace:
+    dest: '/boot/firmware/cmdline.txt'
+    regexp: 'console=serial0,115200 '
+    replace: ' '
 
 - name: Load I2C module
   lineinfile:
@@ -205,6 +228,36 @@
     name: ubuntu
     group: i2c
     append: yes
+
+- name: Check that snap exists
+  stat:
+    path: '/usr/bin/snap'
+  register: snap_path
+
+- name: Remove Snap packages
+  snap:
+    name: '{{item}}'
+    state: 'absent'
+  with_items:
+    - lxd
+    - core18
+    - snapd
+  when: snap_path.stat.exists
+
+- name: Unmount Snap mount points
+  mount:
+    path: '{{item}}'
+    state: 'unmounted'
+  with_items:
+    - /snap/lxd/*
+    - /snap/core18/*
+    - /snap/snapd/*
+
+- name: Uninstall Snap
+  apt:
+    name: 'snapd'
+    state: 'absent'
+    purge: 'yes'
 
 # Local Variables:
 # mode: yaml
