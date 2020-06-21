@@ -145,7 +145,7 @@
 
 - name: Enable I2C at 50kHz
   lineinfile:
-    dest: '/boot/firmware/syscfg.txt'
+    dest: '/boot/firmware/usercfg.txt'
     insertafter: 'dtparam=i2c_arm=on'
     line: 'dtparam=i2c_baudrate=50000'
 
