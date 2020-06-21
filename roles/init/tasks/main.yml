@@ -229,6 +229,12 @@
     group: i2c
     append: yes
 
+- name: Copy uboot.env (setenv bootdelay -2)
+  copy:
+    src: uboot.env
+    dest: '/boot/firmware/uboot.env'
+    mode: '0755'
+
 - name: Check that snap exists
   stat:
     path: '/usr/bin/snap'
