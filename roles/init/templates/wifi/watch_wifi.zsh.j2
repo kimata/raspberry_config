@@ -3,12 +3,13 @@
 
 zmodload zsh/regex
 
-COUNT=6
+PING_COUNT=6
+COUNT_FILE=/dev/shm/watch_wifi_fail
 
 function get_gateway_ip {
     for ((i=0; i < 5; i++)); do
         ip=$(/sbin/ip route 2> /dev/null | awk '/default via / { print $3 }');
-	if [[ "$ip" -regex-match "^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$" ]]; then
+        if [[ "$ip" -regex-match "^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$" ]]; then
             echo $ip
             return
         fi
@@ -24,10 +25,20 @@ if [ "$gateway_ip" = "" ]; then
     exit
 fi
 
-ping=$(ping -c $COUNT -q ${gateway_ip} 2> /dev/null)
+ping=$(ping -c $PING_COUNT -q ${gateway_ip} 2> /dev/null)
 count=$(echo $ping | grep 'received' | awk -F',' '{ print $2 }' | awk '{ print $1 }')
 
-if [ "$count" = "0" ]; then
+if [ $count -eq 0 ]; then
+    FAIL_COUNT=$(wc -c $COUNT_FILE | cut -d ' ' -f 1)
+
+    # 3 回連続 NG だったら再起動
+    if [ $FAIL_COUNT -gt 2 ]; then
+        rm -f $COUNT_FILE
+        /usr/sbin/reboot -f
+    fi
+
+    echo -n '*' >> $COUNT_FILE
+
     echo "Connectivity test failed (IP: ${gateway_ip})." >&2
     echo "Let's try to reconnect to WiFi AP." >&2
     echo "" >&2
@@ -41,6 +52,8 @@ if [ "$count" = "0" ]; then
     iwconfig=$(sudo iwconfig)
     echo "> iwconfig" >&2
     echo "$iwconfig" >&2
+
+    /sbin/wpa_cli -i wlan0 reconfigure > /dev/null 2>&1
 else
     echo "Connectivity test passed. Packet(s) received: ${count}."
 fi
