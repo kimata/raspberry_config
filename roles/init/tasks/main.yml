@@ -51,6 +51,15 @@
     group: 'root'
     mode: '0440'
 
+- name: Disable logging for sudo and cron
+  lineinfile:
+    dest: '{{item}}'
+    line: 'session [success=1 default=ignore] pam_succeed_if.so quiet_success uid = 0'
+    insertbefore: '@include common-session-noninteractive'
+  with_items:
+    - '/etc/pam.d/sudo'
+    - '/etc/pam.d/cron'
+
 - name: Setting SSHD
   template:
     src: 'ssh/sshd_config.j2'
