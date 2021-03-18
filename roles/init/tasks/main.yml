@@ -279,6 +279,15 @@
     state: 'absent'
     purge: 'yes'
 
+- name: Setting logrotate
+  replace:
+    path: '{{ item }}'
+    regexp: 'weekly'
+    replace: 'daily'
+  with_items:
+    - /etc/logrotate.conf
+    - /etc/logrotate.d/rsyslog
+
 # Local Variables:
 # mode: yaml
 # tab-width: 4
