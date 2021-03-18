@@ -78,7 +78,7 @@
     name: systemd-time-wait-sync.service
     enabled: yes
 
-- name: Disable APT auto updatre
+- name: Disable APT auto update
   lineinfile:
     dest: '/etc/apt/apt.conf.d/20auto-upgrades'
     regexp: '{{item.regexp}}'
