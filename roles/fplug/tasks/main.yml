@@ -1,0 +1,25 @@
+- name: Install Packages
+  apt:
+    update-cache: 'yes'
+    pkg:
+      - bluetooth
+      - python3-bluez
+
+- name: Setting USB on
+  blockinfile:
+    dest: '/etc/rc.local'
+    content: |
+      # USB on
+    insertbefore: 'exit 0'
+
+- name: Setting Fluetd Autorun
+  lineinfile:
+    dest: '/etc/rc.local'
+    insertbefore: 'exit 0'
+    regex: '^fluentd.*$'
+    line: 'fluentd -d /home/{{ ansible_env["SUDO_USER"] }}/rasp-python/etc/fluent.pid -c /home/{{ ansible_env["SUDO_USER"] }}/rasp-python/etc/fluent.conf.fplug -o /dev/shm/fluentd.log'
+    
+# Local Variables:
+# mode: yaml
+# tab-width: 4
+# End:
