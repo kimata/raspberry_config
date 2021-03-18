@@ -11,21 +11,12 @@
 
 - name: Install Packages
   apt:
-    pkg:
-      - postfix
-      - i2c-tools
-      - wiringpi
-      - python3-gpiozero
-      - python3-smbus
-      - zsh
-      - emacs-nox
-      - git
-      - mailutils
-      - lsb-release
-      - net-tools
-      - daemontools
-      - inetutils-traceroute
-      - zabbix-agent
+    pkg: [
+      'postfix', 'i2c-tools', 'wiringpi', 'python3-gpiozero',
+      'python3-smbus', 'zsh', 'emacs-nox', 'git', 'mailutils',
+      'lsb-release', 'net-tools', 'daemontools', 'inetutils-traceroute',
+      'zabbix-agent', 'wireless-tools', 'iw', 'cpufrequtils'
+    ]
     update_cache: 'yes'
     cache_valid_time: 86400
 
