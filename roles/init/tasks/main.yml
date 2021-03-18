@@ -69,13 +69,8 @@
 - name: Setting NTP client
   replace:
     path: '/etc/systemd/timesyncd.conf'
-    regexp: '{{ item.regexp }}'
-    replace: '{{ item.replace }}'
-  with_items:
-    - regexp: '^#?NTP=.*$'
-      replace: 'NTP={{ network.ntp }}'
-    - regexp: '^#?FallbackNTP=.*$'
-      replace: 'FallbackNTPNTP=ntp.nict.jp'
+    regexp: '^#?NTP=.*$'
+    replace: 'NTP={{ network.ntp }}'
   notify: restart timesyncd
 
 - name: Enable systemd-time-wait-sync
