@@ -224,13 +224,18 @@
     create: 'yes'
     dest: '/etc/modprobe.d/bcm2835-wdt.conf'
     regexp: '^options bcm2835_wdt heartbeat='
-    line: 'options bcm2835_wdt heartbeat=30'
+    line: 'options bcm2835_wdt heartbeat=60'
 
 - name: Setting Heartbeat
   lineinfile:
     dest: '/etc/systemd/system.conf'
-    regexp: '^#?RuntimeWatchdogSec'
-    line: 'RuntimeWatchdogSec=10'
+    regexp: '{{item.regexp}}'
+    line: '{{item.line}}'
+  with_items:
+    - regexp: '^#?RuntimeWatchdogSec'
+      line: 'RuntimeWatchdogSec=10'
+    - regexp: '^#?ShutdownWatchdogSec'
+      line: 'ShutdownWatchdogSec=1min'
 
 - name: Join I2C group
   user:
