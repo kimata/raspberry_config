@@ -1,0 +1,123 @@
+- name: Install Packages
+  apt:
+    pkg: [
+      'cmake', 'pkg-config', 'debhelper', 'dh-systemd', 'devscripts', 'libusb-1.0-0-dev',
+      'libhackrf-dev', 'liblimesuite-dev',
+      'tcl8.6-dev', 'python3-dev', 'libz-dev',
+      'libboost-system-dev', 'libboost-program-options-dev',
+      'libboost-regex-dev', 'libboost-filesystem-dev',
+      'net-tools', 'tclx8.4', 'tcllib', 'itcl3',
+      'libssl-dev', 'tcl-dev', 'chrpath', 'tcl-tls',
+      'libncurses5-dev', 'lighttpd'
+    ]
+    update_cache: 'yes'
+
+- name: Fetch librtlsdr
+  git:
+    repo: https://github.com/steve-m/librtlsdr
+    dest: /tmp/librtlsdr
+    update: yes
+    force: yes
+
+- name: Make build dir
+  file:
+    path=/tmp/librtlsdr/build
+    state=directory
+
+- name: Build librtlsdr
+  command: '{{ item }}'
+  args:
+    chdir: /tmp/librtlsdr/build
+  with_items:
+    - cmake ../
+    - make
+
+- name: Package librtlsdr
+  command: dpkg-buildpackage -b
+  args:
+    chdir: /tmp/librtlsdr
+    
+- name: Install librtlsdr
+  apt:
+    deb: '{{ item }}'
+  with_items:
+    - /tmp/librtlsdr0_0.6_arm64.deb
+    - /tmp/librtlsdr-dev_0.6_arm64.deb
+
+- name: Prevent librtlsdr from being upgraded
+  dpkg_selections:
+    name: '{{ item }}'
+    selection: hold
+  with_items:
+    - librtlsdr0
+    - librtlsdr-dev
+
+- name: Fetch dump1090
+  git:
+    repo: https://github.com/flightaware/dump1090
+    dest: /tmp/dump1090
+    version: v5.0
+    update: yes
+    force: yes
+
+- name: Workaround for non-available bladeRF package
+  replace:
+    path: '{{item.path}}'
+    regexp: '{{item.regexp}}'
+    replace: '{{item.replace}}'
+  with_items:
+    - path: /tmp/dump1090/debian/rules
+      regexp: 'BLADERF = yes'
+      replace: 'BLADERF = no'
+    - path: /tmp/dump1090/debian/control
+      regexp: 'libbladerf-dev <!custom> <bladerf>,\n'
+      replace: ''
+    - path: /tmp/dump1090/Makefile
+      regexp: '-Wmissing-declarations -Werror'
+      replace: '-Wmissing-declarations -Wno-address-of-packed-member -Werror'
+        
+- name: Build dump1090
+  command: 'dpkg-buildpackage -b --no-sign'
+  args:
+    chdir: /tmp/dump1090
+
+- name: Install dump1090
+  apt:
+    deb: /tmp/dump1090-fa_5.0_arm64.deb
+
+- name: Fetch PiAware
+  git:
+    repo: http://github.com/flightaware/piaware_builder
+    dest: /tmp/piaware_builder
+    version: v5.0
+    update: yes
+    force: yes
+
+- name: Build PiAware
+  command: './sensible-build.sh bionic'
+  args:
+    chdir: /tmp/piaware_builder
+
+- name: Workaround for pyvenv
+  replace:
+    path: '{{item.path}}'
+    regexp: '{{item.regexp}}'
+    replace: '{{item.replace}}'
+  with_items:
+    - path: /tmp/piaware_builder/package-bionic/debian/control
+      regexp: 'python3-venv, '
+      replace: ''
+
+- name: Package PiAware
+  command: 'dpkg-buildpackage -b --no-sign'
+  args:
+    chdir: /tmp/piaware_builder/package-bionic
+
+- name: Install PiAware
+  apt:
+    deb: /tmp/piaware_builder/piaware_5.0~ubuntu1804+1_arm64.deb
+
+# Local Variables:
+# mode: yaml
+# tab-width: 4
+# End:
