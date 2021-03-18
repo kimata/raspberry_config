@@ -6,7 +6,7 @@
 
   roles:
     # - init
-    - water
+    - fplug
 
   handlers:
 
