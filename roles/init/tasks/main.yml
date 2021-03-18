@@ -201,6 +201,18 @@
     line: 'echo "System restarted at " `date` | mail -s "`hostname`: restart" root'
     insertbefore: 'exit 0'
 
+- name: Disable WiFi power save
+  lineinfile:
+    dest: '/etc/rc.local'
+    line: 'iwconfig wlan0 power off'
+    insertbefore: 'exit 0'
+
+- name: Power save
+  lineinfile:
+    dest: '/etc/rc.local'
+    line: 'cpufreq-set -g powersave'
+    insertbefore: 'exit 0'
+
 - name: Enable Watchdog
   lineinfile:
     dest: '/boot/firmware/usercfg.txt'
