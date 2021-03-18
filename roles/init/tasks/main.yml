@@ -190,6 +190,9 @@
     - dest: '/etc/aliases'
       regexp: '^root:.*'
       line: "root: {{network.root_mail}}"
+    - dest: '/etc/aliases'
+      regexp: '^ubuntu:.*'
+      line: "ubuntu: {{network.root_mail}}"
   notify: restart postfix
 
 - name: Boot nofitication
