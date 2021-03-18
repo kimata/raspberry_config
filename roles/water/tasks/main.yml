@@ -1,0 +1,38 @@
+- name: Install Packages
+  apt:
+    update-cache: 'yes'
+    pkg:
+      - python3-pip
+      - python3-flask
+    state: 'present'
+
+- name: Copy script
+  become: no
+  git:
+    repo: https://github.com/kimata/rasp-water.git
+    dest: ~/rasp-water
+
+- name: Automatically update script
+  lineinfile:
+    dest: '/etc/rc.local'
+    state: present
+    insertbefore: 'exit 0'
+    line: 'sudo -u {{ ansible_env["SUDO_USER"] }} git -C /home/{{ ansible_env["SUDO_USER"] }}/rasp-water pull'
+
+- name: Load ADS1015 driver
+  lineinfile:
+    dest: '/boot/firmware/usercfg.txt'
+    insertbefore: 'EOF'
+    line: 'dtoverlay=ads1015'
+
+- name: Install Python libraries
+  pip:
+    name:
+      - python-crontab
+      - influxdb
+    executable: 'pip3'
+
+# Local Variables:
+# mode: yaml
+# tab-width: 4
+# End:
