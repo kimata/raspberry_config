@@ -1,5 +1,5 @@
 network:
-  mail: mail.green-rabbit.net
+  mail: dripper.green-rabbit.net
   ntp: ntp.nict.jp
   zabbix: zabbix.green-rabbit.net
   root_mail: root@dripper.green-rabbit.net
