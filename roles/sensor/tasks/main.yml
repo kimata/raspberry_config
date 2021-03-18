@@ -1,0 +1,58 @@
+- name: Install Packages
+  apt:
+    update-cache: 'yes'
+    pkg:
+      - ruby
+      - ruby-dev
+      - build-essential 
+      - ruby-oj
+    state: 'present'
+
+- name: Enable 2nd I2C bus
+  lineinfile:
+    dest: '/boot/firmware/usercfg.txt'
+    insertbefore: 'EOF'
+    line: 'dtparam=i2c_vc=on'
+
+- name: Install Fluentd
+  gem:
+    name: 'fluentd'
+    version: 1.10.4
+    user_install: False
+
+- name: Copy script
+  become: no
+  git:
+    repo: https://github.com/kimata/rasp-python.git
+    dest: ~/rasp-python
+
+- name: Automatically update script
+  lineinfile:
+    dest: '/etc/rc.local'
+    state: present
+    insertbefore: 'exit 0'
+    line: 'sudo -u {{ ansible_env["SUDO_USER"] }} git -C /home/{{ ansible_env["SUDO_USER"] }}/rasp-python pull'
+      
+- name: Edit Fluentd Setting
+  become: no
+  replace: >-
+    dest='~/rasp-python/etc/fluent.conf'
+    regexp='{{ item.regexp }}'
+    replace='{{ item.replace }}'
+  with_items:
+    - regexp: 'command\s+python ".*$'
+      replace: 'command python "/home/{{ ansible_env["SUDO_USER"] }}/rasp-python/app/sense_env/sense_env.py"'
+    - regexp: 'host\s+".*$'
+      replace: 'host "{{ fluentd.aggr_host }}"'
+
+- name: Setting Fluetd Autorun
+  lineinfile:
+    dest: '/etc/rc.local'
+    state: 'present'
+    insertbefore: 'exit 0'
+    line: 'fluentd -d /home/{{ ansible_env["SUDO_USER"] }}/rasp-python/etc/fluent.pid -c /home/{{ ansible_env["SUDO_USER"] }}/rasp-python/etc/fluent.conf -o /dev/shm/fluentd.log'
+
+# Local Variables:
+# mode: yaml
+# tab-width: 4
+# End:
