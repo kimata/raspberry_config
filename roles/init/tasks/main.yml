@@ -90,7 +90,6 @@
       line: 'APT::Periodic::Unattended-Upgrade "0";'
 
 - name: Create /etc/rc.local
-  # NOTE: Wifi の場合は「ホスト名-wifi」でアクセスできるようにする
   lineinfile:
     dest: '/etc/rc.local'
     create: true
