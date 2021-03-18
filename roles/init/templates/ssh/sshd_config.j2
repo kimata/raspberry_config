@@ -3,9 +3,6 @@
 Port                            22
 Protocol                        2
 
-KeyRegenerationInterval         3600
-ServerKeyBits                   768
-
 SyslogFacility                  AUTH
 LogLevel                        INFO
 
@@ -14,11 +11,9 @@ PermitRootLogin                 no
 StrictModes                     yes
 MaxAuthTries                    2
 
-RSAAuthentication               no
 PubkeyAuthentication            yes
 AuthorizedKeysFile              %h/.ssh/authorized_keys
 
-RhostsRSAAuthentication         no
 HostbasedAuthentication         no
 IgnoreUserKnownHosts            no
 IgnoreRhosts                    yes
@@ -36,11 +31,9 @@ ClientAliveCountMax             5
 UseDNS                          no
 UsePAM                          no
 
-UsePrivilegeSeparation          yes
 PrintMotd                       no
 PrintLastLog                    yes
 KeepAlive                       yes
-UseLogin                        no
 PermitUserEnvironment           yes
 Compression                     yes
 MaxStartups                     3
