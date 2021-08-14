@@ -1,0 +1,22 @@
+- name: restart octoprint
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    name: octoprint
+
+- name: restart haproxy
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    name: haproxy
+
+- name: restart webcamd
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    name: webcamd
+
+# Local Variables:
+# mode: yaml
+# tab-width: 4
+# End:
