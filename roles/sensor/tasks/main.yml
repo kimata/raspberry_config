@@ -26,6 +26,13 @@
     repo: https://github.com/kimata/rasp-python.git
     dest: ~/rasp-python
 
+# - name: Change remote URL
+#   git_config:
+#     name: remote.origin.url
+#     repo: ~/rasp-python
+#     scope: local
+#     value: git@github.com:kimata/rasp-python.git
+
 - name: Automatically update script
   lineinfile:
     dest: '/etc/rc.local'
