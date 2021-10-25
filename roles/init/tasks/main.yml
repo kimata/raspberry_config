@@ -246,7 +246,7 @@
 - name: Join I2C group
   user:
     name: ubuntu
-    group: i2c
+    groups: i2c
     append: yes
 
 - name: Copy uboot.env (setenv bootdelay -2)
