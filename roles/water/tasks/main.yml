@@ -18,7 +18,10 @@
     dest: '/etc/rc.local'
     state: present
     insertbefore: 'exit 0'
-    line: 'sudo -u {{ ansible_env["SUDO_USER"] }} git -C /home/{{ ansible_env["SUDO_USER"] }}/rasp-water pull'
+    line: '{{item}}'
+  with_items:
+    - 'sudo -u {{ ansible_env["SUDO_USER"] }} git -C /home/{{ ansible_env["SUDO_USER"] }}/rasp-water pull'
+    - 'sudo /home/ubuntu/rasp-water/flask/app.py'
 
 - name: Load ADS1015 driver
   lineinfile:
