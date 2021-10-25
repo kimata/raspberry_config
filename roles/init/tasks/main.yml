@@ -89,6 +89,12 @@
     - regexp: '^APT::Periodic::Unattended-Upgrade .*'
       line: 'APT::Periodic::Unattended-Upgrade "0";'
 
+- name: Disable fwupd
+  systemd:
+    name: fwupd.service
+    state: stopped
+    masked: yes
+
 - name: Create /etc/rc.local
   lineinfile:
     dest: '/etc/rc.local'
