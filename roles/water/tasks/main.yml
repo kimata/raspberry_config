@@ -4,6 +4,7 @@
     pkg:
       - python3-pip
       - python3-flask
+      - python3-psutil
     state: 'present'
 
 - name: Copy script
@@ -25,11 +26,18 @@
     insertbefore: 'EOF'
     line: 'dtoverlay=ads1015'
 
+- name: Enable cron without passord setting
+  lineinfile:
+    dest: '/etc/pam.d/cron'
+    regexp: '#?session    required     pam_loginuid.so'
+    line: '#session    required     pam_loginuid.so'
+
 - name: Install Python libraries
   pip:
     name:
       - python-crontab
       - influxdb
+      - fluent-logger
     executable: 'pip3'
 
 # Local Variables:
