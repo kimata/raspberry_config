@@ -267,6 +267,7 @@
   with_items:
     - lxd
     - core18
+    - core20
     - snapd
   when: snap_path.stat.exists
 
@@ -277,6 +278,7 @@
   with_items:
     - /snap/lxd/*
     - /snap/core18/*
+    - /snap/core20/*
     - /snap/snapd/*
 
 - name: Uninstall Snap
