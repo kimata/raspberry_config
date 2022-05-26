@@ -3,9 +3,8 @@
     - config.yml
 
   become: yes
-
   roles:
+    - init
     - octoprint
-
   handlers:
 
