@@ -309,6 +309,12 @@
     regexp: '^#?SystemMaxUse'
     line: 'SystemMaxUse=1M'
 
+- name: Enable sysstat
+  lineinfile:
+    dest: '/etc/default/sysstat'
+    regexp: '^ENABLED=.*$'
+    line: 'ENABLED="true"'
+
 # Local Variables:
 # mode: yaml
 # tab-width: 4
