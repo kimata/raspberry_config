@@ -29,11 +29,11 @@
     insertbefore: 'EOF'
     line: 'dtoverlay=ads1015'
 
-- name: Enable cron without passord setting
-  lineinfile:
-    dest: '/etc/pam.d/cron'
-    regexp: '#?session    required     pam_loginuid.so'
-    line: '#session    required     pam_loginuid.so'
+# - name: Enable cron without passord setting
+#   lineinfile:
+#     dest: '/etc/pam.d/cron'
+#     regexp: '#?session    required     pam_loginuid.so'
+#     line: '#session    required     pam_loginuid.so'
 
 - name: Install Python libraries
   pip:
