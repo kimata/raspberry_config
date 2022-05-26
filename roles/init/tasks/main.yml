@@ -152,7 +152,7 @@
 
 - name: Enable I2C at 50kHz
   lineinfile:
-    dest: '/boot/firmware/usercfg.txt'
+    dest: '/boot/firmware/config.txt'
     insertafter: 'dtparam=i2c_arm=on'
     line: 'dtparam=i2c_baudrate=50000'
 
@@ -228,7 +228,7 @@
 
 - name: Enable Watchdog
   lineinfile:
-    dest: '/boot/firmware/usercfg.txt'
+    dest: '/boot/firmware/config.txt'
     insertbefore: 'EOF'
     line: 'dtparam=watchdog=on'
 
@@ -288,11 +288,11 @@
     - /snap/core20/*
     - /snap/snapd/*
 
-- name: Uninstall Snap
-  apt:
-    name: 'snapd'
-    state: 'absent'
-    purge: 'yes'
+# - name: Uninstall Snap
+#   apt:
+#     name: 'snapd'
+#     state: 'absent'
+#     purge: 'yes'
 
 - name: Setting logrotate
   replace:
