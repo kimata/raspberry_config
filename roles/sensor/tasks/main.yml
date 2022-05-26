@@ -26,6 +26,7 @@
   git:
     repo: https://github.com/kimata/rasp-python.git
     dest: ~/rasp-python
+    force: yes
 
 # - name: Change remote URL
 #   git_config:
