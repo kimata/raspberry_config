@@ -5,6 +5,7 @@
   become: yes
 
   roles:
+    - init
     - sensor
 
   handlers:
