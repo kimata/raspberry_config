@@ -51,14 +51,20 @@
     group: 'root'
     mode: '0440'
 
-- name: Disable logging for sudo and cron
-  lineinfile:
-    dest: '{{item}}'
-    line: 'session [success=1 default=ignore] pam_succeed_if.so quiet_success uid = 0'
-    insertbefore: '@include common-session-noninteractive'
-  with_items:
-    - '/etc/pam.d/sudo'
-    - '/etc/pam.d/cron'
+# - name: Disable logging for sudo and cron
+#   lineinfile:
+#     dest: '{{item}}'
+#     line: 'session [success=1 default=ignore] pam_succeed_if.so quiet_success uid = 0'
+#     insertbefore: '@include common-session-noninteractive'
+#   with_items:
+#     - '/etc/pam.d/sudo'
+#     - '/etc/pam.d/cron'
+
+# - name: Enable root with empty password
+#   replace:
+#     path: '/etc/pam.d/common-auth'
+#     regexp: '^auth    [success=1 default=ignore]      pam_unix.so nullok.*'
+#     replace: 'auth    [success=1 default=ignore]      pam_unix.so nullok_secure'
 
 - name: Setting SSHD
   template:
