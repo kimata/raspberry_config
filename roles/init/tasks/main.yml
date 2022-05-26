@@ -15,7 +15,8 @@
       'postfix', 'i2c-tools', 'wiringpi', 'python3-gpiozero',
       'python3-smbus', 'zsh', 'emacs-nox', 'git', 'mailutils',
       'lsb-release', 'net-tools', 'daemontools', 'inetutils-traceroute',
-      'zabbix-agent', 'wireless-tools', 'iw', 'cpufrequtils'
+      'zabbix-agent', 'wireless-tools', 'iw', 'cpufrequtils', 'libraspberrypi-bin',
+      'sysstat'
     ]
     update_cache: 'yes'
     cache_valid_time: 86400
