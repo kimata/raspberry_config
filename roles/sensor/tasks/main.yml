@@ -4,20 +4,21 @@
     pkg:
       - ruby
       - ruby-dev
+      - ruby-webrick
       - build-essential 
       - ruby-oj
     state: 'present'
 
 - name: Enable 2nd I2C bus
   lineinfile:
-    dest: '/boot/firmware/usercfg.txt'
-    insertbefore: 'EOF'
+    dest: '/boot/firmware/config.txt'
+    insertafter: 'dtparam=i2c_arm=on'
     line: 'dtparam=i2c_vc=on'
 
 - name: Install Fluentd
   gem:
     name: 'fluentd'
-    version: 1.10.4
+    version: 1.14.6
     user_install: False
 
 - name: Copy script
