@@ -53,7 +53,7 @@ if [ $count -eq 0 ]; then
     echo "> iwconfig" >&2
     echo "$iwconfig" >&2
 
-    /sbin/wpa_cli -i wlan0 reconfigure > /dev/null 2>&1
+    /usr/sbin/netplan apply > /dev/null 2>&1
 else
     echo "Connectivity test passed. Packet(s) received: ${count}."
 fi
