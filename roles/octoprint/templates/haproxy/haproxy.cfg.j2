@@ -18,8 +18,8 @@ defaults
         option forwardfor
         maxconn 2000
         timeout connect 5s
-        timeout client  15min
-        timeout server  15min
+        timeout client  15m
+        timeout server  15m
 
 frontend public
         bind :::80 v4v6
@@ -27,10 +27,10 @@ frontend public
         default_backend octoprint
 
 backend octoprint
-        http-request replace-uri ^([^\ :]*)\ /(.*)     \1\ /\2
+        http-request replace-uri ^([^\ :]*)\/(.*)     \1\/\2
         option forwardfor
         server octoprint 127.0.0.1:5000
 
 backend webcam
-        http-request replace-uri ^([^\ :]*)\ /webcam/(.*)     \1\ /\2
+        http-request replace-uri ^([^\ :]*)\/webcam/(.*)     \1\/\2
         server webcam  127.0.0.1:8080
