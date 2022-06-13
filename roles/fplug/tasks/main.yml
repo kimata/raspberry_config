@@ -11,13 +11,19 @@
     # NOTE: '22/6 時点だと apt の python3-bluez だと「PY_SSIZE_T_CLEAN macro must be defined for '#' formats」が出る
     name: git+https://github.com/pybluez/pybluez
 
-- name: Setting USB on
+- name: Setting USB on (for using Bluetooth Dongle)
   blockinfile:
     dest: '/etc/rc.local'
     content: |
       # USB on
     insertbefore: 'exit 0'
 
+- name: Disable Bluetooth (for using Bluetooth Dongle)
+  lineinfile:
+    dest: '/boot/firmware/config.txt'
+    insertafter: 'EOF'
+    line: 'dtoverlay=disable-bt'
+      
 - name: Setting Fluetd Autorun
   lineinfile:
     dest: '/etc/rc.local'
