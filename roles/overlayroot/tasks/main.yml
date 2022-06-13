@@ -2,24 +2,46 @@
   shell:
     cmd: |
       overlayroot-chroot /usr/bin/sed -i -e 's/^overlayroot=.*$/overlayroot=""/' /etc/overlayroot.conf
-  when: disable is defined
+  when: disable is defined and disable == "1"
 
 - name: Enable overlayroot
   lineinfile:
     dest: '/etc/overlayroot.conf'
     regexp: '^overlayroot=.*$'
     line: 'overlayroot="tmpfs"'
-  when: enable is defined
+  when: enable is defined and enable == "1"
 
+- name: List old log files (1)
+  find:
+    paths: /var/log
+    patterns: "*.gz"
+  register: old_log_1
+  when: enable is defined and enable == "1"
+
+- name: List old log files (2)
+  find:
+    paths: /var/log
+    patterns: "*.0"
+  register: old_log_2
+  when: enable is defined and enable == "1"
+    
+- name: Remove old log files
+  file:
+    path: "{{ item['path'] }}"
+    state: absent
+  with_items:
+    - "{{ old_log_1['files'] }}"
+    - "{{ old_log_2['files'] }}"
+  when: enable is defined and enable == "1"
+
+- name: Remove systemd log
+  shell:
+    cmd: journalctl --vacuum-size=0
+  when: enable is defined and enable == "1"
+    
 - name: Reboot
-  shell: 'reboot'
-
-- name: Wait for booting
-  local_action: wait_for
-  args:
-    host: '{{ inventory_hostname }}'
-    port: 22
-    timeout: 600
+  reboot:
+    reboot_timeout: 180
 
 # Local Variables:
 # mode: yaml
