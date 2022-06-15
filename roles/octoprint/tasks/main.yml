@@ -53,14 +53,6 @@
       line: User=ubuntu
   notify: restart octoprint
 
-- name: Edit config
-  lineinfile:
-    dest: /home/ubuntu/.octoprint/config.yaml
-    regexp: host
-    line: 'host: 127.0.0.1'
-    insertafter: EOF
-  become: no
-
 - name: Setting HAProxy
   template:
     src: haproxy/haproxy.cfg.j2
@@ -102,6 +94,32 @@
   with_items:
     - octoprint
     - webcamd
+
+- name: Check config.yaml
+  stat:
+    path: /home/ubuntu/.octoprint/config.yaml
+  register: config
+
+- name: Initial startup of OctoPrint
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    name: octoprint
+  when: not config.stat.exists
+
+- name: Wait for startup of OctoPrint
+  pause:
+    seconds: 10
+  when: not config.stat.exists
+  
+- name: Edit config
+  lineinfile:
+    dest: /home/ubuntu/.octoprint/config.yaml
+    regexp: host
+    line: 'host: 127.0.0.1'
+    insertafter: EOF
+  become: no
+  notify: restart octoprint
 
 # Local Variables:
 # mode: yaml
