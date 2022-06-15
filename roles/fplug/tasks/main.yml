@@ -9,7 +9,7 @@
 - name: Install Python Bluez
   pip:
     # NOTE: '22/6 時点だと apt の python3-bluez だと「PY_SSIZE_T_CLEAN macro must be defined for '#' formats」が出る
-    name: git+https://github.com/pybluez/pybluez
+    name: git+https://github.com/kimata/pybluez
 
 - name: Setting USB on (for using Bluetooth Dongle)
   blockinfile:
